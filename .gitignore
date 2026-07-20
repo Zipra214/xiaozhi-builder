@@ -1,0 +1,5 @@
+node_modules/
+xiaozhi-esp32/build/
+output/
+*.bin
+.DS_Store

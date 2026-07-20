@@ -1,0 +1,90 @@
+# Build XiaoZhi ESP32 Firmware
+# Triggered manually via workflow_dispatch or via GitHub API
+
+name: Build XiaoZhi Firmware
+
+on:
+  workflow_dispatch:
+    inputs:
+      board:
+        description: 'Board type (directory name under main/boards/)'
+        required: true
+        type: string
+        default: 'bread-compact-wifi'
+      chip:
+        description: 'ESP32 chip target (esp32, esp32s3, esp32c3, esp32c5, esp32c6, esp32p4)'
+        required: true
+        type: string
+        default: 'esp32s3'
+      config_json:
+        description: 'Board config as JSON (pins, display, language, extra_pins)'
+        required: false
+        type: string
+        default: '{}'
+      language:
+        description: 'UI language code'
+        required: false
+        type: string
+        default: 'vi_VN'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Generate board config
+        run: |
+          echo '${{ inputs.config_json }}' > /tmp/config.json
+          node scripts/generate-config.js /tmp/config.json
+
+      - name: Verify generated config
+        run: |
+          echo "=== config.h ==="
+          head -60 xiaozhi-esp32/main/boards/${{ inputs.board }}/config.h
+          echo ""
+          echo "=== sdkconfig.defaults (last 20 lines) ==="
+          tail -20 xiaozhi-esp32/sdkconfig.defaults
+
+      - name: Build firmware (ESP-IDF v6.0.2)
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v6.0.2
+          target: ${{ inputs.chip }}
+          path: xiaozhi-esp32
+          command: |
+            idf.py set-target ${{ inputs.chip }}
+            idf.py build
+
+      - name: Collect build artifacts
+        run: |
+          mkdir -p output
+          cp xiaozhi-esp32/build/*.bin output/ 2>/dev/null || true
+          cp xiaozhi-esp32/build/bootloader/*.bin output/ 2>/dev/null || true
+          cp xiaozhi-esp32/build/partition_table/*.bin output/ 2>/dev/null || true
+          cp xiaozhi-esp32/sdkconfig output/sdkconfig.txt 2>/dev/null || true
+          cp xiaozhi-esp32/main/boards/${{ inputs.board }}/config.h output/ 2>/dev/null || true
+          ls -la output/
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: xiaozhi-firmware-${{ inputs.board }}-${{ inputs.chip }}
+          path: output/
+          retention-days: 90
+
+      - name: Build summary
+        run: |
+          FW_SIZE=$(du -sh xiaozhi-esp32/build/*.bin 2>/dev/null | head -1 | cut -f1 || echo "unknown")
+          echo "### ✅ Firmware Built :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Board:** ${{ inputs.board }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Chip:** ${{ inputs.chip }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Language:** ${{ inputs.language }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Binaries:** $FW_SIZE" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download firmware from **Artifacts** section above :point_up:" >> $GITHUB_STEP_SUMMARY

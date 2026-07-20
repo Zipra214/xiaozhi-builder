@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XiaoZhi ESP32 Builder</title>
+<style>
+:root { --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #e2e8f0; --muted: #94a3b8; --accent: #3b82f6; --accent-hover: #2563eb; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; }
+* { box-sizing:border-box; margin:0; padding:0 }
+body { font-family:system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh }
+.container { max-width:900px; margin:0 auto; padding:20px }
+h1 { font-size:1.5rem; margin-bottom:4px }
+h2 { font-size:1rem; color:var(--muted); font-weight:400; margin-bottom:20px }
+.card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px }
+.card-title { font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:8px }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:12px }
+.form-group { margin-bottom:12px }
+.form-group label { display:block; font-size:.85rem; color:var(--muted); margin-bottom:4px }
+select, input { width:100%; padding:8px 12px; background:#0f172a; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:.9rem; font-family:inherit }
+select:focus, input:focus { outline:none; border-color:var(--accent) }
+.pin-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px }
+.pin-item { background:#0f172a; border:1px solid var(--border); border-radius:8px; padding:8px }
+.pin-item .pin-label { font-size:.75rem; color:var(--muted); margin-bottom:4px }
+.pin-item input { padding:4px 8px; font-size:.8rem }
+.btn { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; border:none; border-radius:8px; font-size:.9rem; font-weight:600; cursor:pointer; transition:all .15s; font-family:inherit }
+.btn-primary { background:var(--accent); color:#fff }
+.btn-primary:hover { background:var(--accent-hover) }
+.btn-success { background:var(--success); color:#000 }
+.btn-success:hover { filter:brightness(.9) }
+.btn:disabled { opacity:.5; cursor:not-allowed }
+.btn-row { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap }
+.log { background:#000; border-radius:8px; padding:12px; font-family:'Courier New',monospace; font-size:.8rem; max-height:300px; overflow-y:auto; white-space:pre-wrap; color:#a3e635 }
+.log .error { color:var(--danger) }
+.log .info { color:var(--muted) }
+.status { padding:4px 10px; border-radius:999px; font-size:.75rem; font-weight:600; display:inline-block }
+.status-idle { background:var(--border); color:var(--muted) }
+.status-building { background:var(--warning); color:#000 }
+.status-done { background:var(--success); color:#000 }
+.status-error { background:var(--danger); color:#fff }
+.hidden { display:none !important }
+.spinner { display:inline-block; width:14px; height:14px; border:2px solid transparent; border-top-color:currentColor; border-radius:50%; animation:spin .6s linear infinite }
+@keyframes spin { to { transform:rotate(360deg) } }
+.result-box { margin-top:10px; padding:12px; border-radius:8px; background:#0f172a; border:1px solid var(--border) }
+.result-box a { color:var(--accent); word-break:break-all }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔧 XiaoZhi ESP32 Builder</h1>
+  <h2>Build firmware · Map pins · Flash directly from browser</h2>
+
+  <!-- Board Selection -->
+  <div class="card">
+    <div class="card-title">📋 Board Setup</div>
+    <div class="grid">
+      <div class="form-group">
+        <label>Board Type</label>
+        <select id="board">
+          <option value="bread-compact-wifi">Bread Compact WiFi (ESP32S3)</option>
+          <option value="bread-compact-wifi-lcd">Bread Compact WiFi + LCD</option>
+          <option value="bread-compact-wifi-s3cam">Bread Compact WiFi + Cam</option>
+          <option value="bread-compact-esp32">Bread Compact ESP32 DevKit</option>
+          <option value="bread-compact-esp32-lcd">Bread Compact ESP32 + LCD</option>
+          <option value="atoms3-echo-base">AtomS3 + Echo Base</option>
+          <option value="esp-box-3">ESP-BOX-3</option>
+          <option value="m5stack-core-s3">M5Stack CoreS3</option>
+          <option value="lichuang-dev">Lichuang Dev Board</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Chip Target</label>
+        <select id="chip">
+          <option value="esp32s3">ESP32-S3</option>
+          <option value="esp32">ESP32</option>
+          <option value="esp32c3">ESP32-C3</option>
+          <option value="esp32c5">ESP32-C5</option>
+          <option value="esp32c6">ESP32-C6</option>
+          <option value="esp32p4">ESP32-P4</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Language</label>
+        <select id="language">
+          <option value="vi_VN" selected>Tiếng Việt</option>
+          <option value="en_US">English</option>
+          <option value="zh_CN">中文</option>
+          <option value="ja_JP">日本語</option>
+          <option value="ko_KR">한국어</option>
+          <option value="th_TH">ไทย</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pin Mapper -->
+  <div class="card">
+    <div class="card-title">📌 GPIO Mapping</div>
+    <div class="pin-grid" id="pinGrid">
+      <!-- Populated by JS -->
+    </div>
+    <div class="form-group" style="margin-top:12px">
+      <label>Audio Mode</label>
+      <select id="audioMode">
+        <option value="simplex">Simplex I2S (mic + speaker separate)</option>
+        <option value="duplex">Duplex I2S (shared bus)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- WiFi & Server -->
+  <div class="card">
+    <div class="card-title">🌐 Network & Server</div>
+    <div class="grid">
+      <div class="form-group">
+        <label>WiFi SSID (for provisioning)</label>
+        <input id="wifiSsid" placeholder="Optional: pre-configure WiFi">
+      </div>
+      <div class="form-group">
+        <label>WiFi Password</label>
+        <input id="wifiPass" type="password" placeholder="Optional">
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>WebSocket Server URL</label>
+        <input id="serverUrl" value="wss://api.tenclass.net/xiaozhi/v1/" placeholder="wss://your-server.com/ws">
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="card">
+    <div class="card-title" style="justify-content:space-between">
+      <span>⚡ Actions</span>
+      <span class="status status-idle" id="status">Ready</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnBuild" onclick="triggerBuild()">
+        🔨 Build Firmware (GitHub Actions)
+      </button>
+      <button class="btn btn-success" id="btnFlash" onclick="flashFirmware()">
+        ⚡ Flash via USB
+      </button>
+    </div>
+    <div class="log hidden" id="log"></div>
+    <div class="result-box hidden" id="result"></div>
+  </div>
+</div>
+
+<script>
+// ─── Pin definitions per board ─────────────────────────────────
+const boardPins = {
+  'bread-compact-wifi': [
+    {key:'mic_ws', label:'MIC WS', gpio:4, group:'audio'},
+    {key:'mic_sck', label:'MIC SCK', gpio:5, group:'audio'},
+    {key:'mic_din', label:'MIC DIN', gpio:6, group:'audio'},
+    {key:'spk_dout', label:'SPK DOUT', gpio:7, group:'audio'},
+    {key:'spk_bclk', label:'SPK BCLK', gpio:15, group:'audio'},
+    {key:'spk_lrck', label:'SPK LRCK', gpio:16, group:'audio'},
+    {key:'led', label:'LED', gpio:48, group:'io'},
+    {key:'boot_btn', label:'BOOT BTN', gpio:0, group:'io'},
+    {key:'display_sda', label:'I2C SDA', gpio:41, group:'display'},
+    {key:'display_scl', label:'I2C SCL', gpio:42, group:'display'},
+    {key:'lamp', label:'LAMP', gpio:18, group:'extra'},
+  ],
+  'bread-compact-wifi-lcd': [
+    {key:'mic_ws', label:'MIC WS', gpio:4, group:'audio'},
+    {key:'mic_sck', label:'MIC SCK', gpio:5, group:'audio'},
+    {key:'mic_din', label:'MIC DIN', gpio:6, group:'audio'},
+    {key:'spk_dout', label:'SPK DOUT', gpio:7, group:'audio'},
+    {key:'spk_bclk', label:'SPK BCLK', gpio:15, group:'audio'},
+    {key:'spk_lrck', label:'SPK LRCK', gpio:16, group:'audio'},
+    {key:'led', label:'LED', gpio:48, group:'io'},
+    {key:'boot_btn', label:'BOOT BTN', gpio:0, group:'io'},
+    {key:'display_sda', label:'LCD SDA', gpio:41, group:'display'},
+    {key:'display_scl', label:'LCD SCL', gpio:42, group:'display'},
+    {key:'lamp', label:'LAMP', gpio:18, group:'extra'},
+  ],
+  'bread-compact-wifi-s3cam': [
+    {key:'mic_ws', label:'MIC WS', gpio:4, group:'audio'},
+    {key:'mic_sck', label:'MIC SCK', gpio:5, group:'audio'},
+    {key:'mic_din', label:'MIC DIN', gpio:6, group:'audio'},
+    {key:'spk_dout', label:'SPK DOUT', gpio:7, group:'audio'},
+    {key:'spk_bclk', label:'SPK BCLK', gpio:15, group:'audio'},
+    {key:'spk_lrck', label:'SPK LRCK', gpio:16, group:'audio'},
+    {key:'led', label:'LED', gpio:48, group:'io'},
+    {key:'boot_btn', label:'BOOT BTN', gpio:0, group:'io'},
+    {key:'display_sda', label:'LCD SDA', gpio:41, group:'display'},
+    {key:'display_scl', label:'LCD SCL', gpio:42, group:'display'},
+    {key:'lamp', label:'LAMP', gpio:18, group:'extra'},
+    {key:'cam_xclk', label:'CAM XCLK', gpio:15, group:'camera'},
+    {key:'cam_pclk', label:'CAM PCLK', gpio:13, group:'camera'},
+    {key:'cam_vsync', label:'CAM VSYNC', gpio:12, group:'camera'},
+    {key:'cam_href', label:'CAM HREF', gpio:11, group:'camera'},
+    {key:'cam_d0', label:'CAM D0', gpio:14, group:'camera'},
+    {key:'cam_d1', label:'CAM D1', gpio:10, group:'camera'},
+    {key:'cam_d2', label:'CAM D2', gpio:9, group:'camera'},
+    {key:'cam_d3', label:'CAM D3', gpio:8, group:'camera'},
+    {key:'cam_sda', label:'CAM SDA', gpio:4, group:'camera'},
+    {key:'cam_scl', label:'CAM SCL', gpio:5, group:'camera'},
+  ],
+  'esp-box-3': [
+    {key:'boot_btn', label:'BOOT BTN', gpio:0, group:'io'},
+    {key:'led', label:'LED', gpio:47, group:'io'},
+  ],
+  'm5stack-core-s3': [
+    {key:'led', label:'LED', gpio:21, group:'io'},
+    {key:'boot_btn', label:'BOOT BTN', gpio:0, group:'io'},
+  ],
+};
+
+// ─── Render pin grid ───────────────────────────────────────────
+const pinGrid = document.getElementById('pinGrid');
+const boardSelect = document.getElementById('board');
+
+function renderPins(board) {
+  const pins = boardPins[board] || boardPins['bread-compact-wifi'];
+  pinGrid.innerHTML = pins.map(p => `
+    <div class="pin-item" data-group="${p.group}">
+      <div class="pin-label">${p.label}</div>
+      <input type="number" id="pin_${p.key}" value="${p.gpio}" min="0" max="48" data-key="${p.key}">
+    </div>
+  `).join('');
+}
+
+boardSelect.addEventListener('change', () => {
+  const board = boardSelect.value;
+  renderPins(board);
+  // Auto-set chip based on board
+  if (board.startsWith('bread-compact-esp32') && !board.includes('wifi-lcd') && !board.includes('wifi-s3cam')) {
+    if (board.includes('bread-compact-esp32') || board === 'bread-compact-esp32-lcd') {
+      document.getElementById('chip').value = 'esp32';
+    }
+  }
+});
+
+// Initial render
+renderPins(boardSelect.value);
+
+// ─── Collect config ────────────────────────────────────────────
+function collectConfig() {
+  const pins = {};
+  document.querySelectorAll('.pin-item input').forEach(inp => {
+    pins[inp.dataset.key] = parseInt(inp.value) || 0;
+  });
+  return {
+    board: boardSelect.value,
+    chip: document.getElementById('chip').value,
+    pins,
+    language: document.getElementById('language').value,
+    audio: { method: document.getElementById('audioMode').value },
+  };
+}
+
+// ─── Build via GitHub Actions API ──────────────────────────────
+const REPO = 'Zipra214/xiaozhi-builder';
+// In production: use a Cloudflare Worker or similar proxy to avoid exposing the token.
+// For now, trigger manually — user copies the curl command.
+async function triggerBuild() {
+  const cfg = collectConfig();
+  const log = document.getElementById('log');
+  const status = document.getElementById('status');
+  const result = document.getElementById('result');
+
+  // Build the dispatch payload
+  const workflowFile = 'build.yml';
+  const payload = {
+    ref: 'main',
+    inputs: {
+      board: cfg.board,
+      chip: cfg.chip,
+      language: cfg.language,
+      config_json: JSON.stringify(cfg),
+    },
+  };
+
+  // Show instructions
+  log.classList.remove('hidden');
+  result.classList.remove('hidden');
+  status.className = 'status status-building';
+  status.textContent = 'Ready to dispatch';
+
+  // Try via gh CLI if available, else show manual curl
+  log.innerHTML = `<span class="info">Dispatching workflow...</span>\n`;
+
+  try {
+    const resp = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${workflowFile}/dispatches`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (resp.ok || resp.status === 204) {
+      log.innerHTML += `<span class="info">✅ Build dispatched! Check run at:</span>\n`;
+      log.innerHTML += `<span class="info">https://github.com/${REPO}/actions</span>\n`;
+      log.innerHTML += `<span class="info">Artifacts will appear in ~6-8 minutes (ESP-IDF build takes time)</span>\n`;
+      status.className = 'status status-building';
+      status.textContent = 'Building...';
+
+      // Start polling for the run
+      setTimeout(() => pollLatestRun(), 15000);
+    } else {
+      const err = await resp.text();
+      log.innerHTML += `<span class="error">❌ API error (${resp.status}): ${err}</span>\n`;
+      log.innerHTML += `<span class="info">\nManual fallback — run this command on your machine:</span>\n`;
+      showManualCommand(cfg);
+    }
+  } catch (e) {
+    log.innerHTML += `<span class="error">❌ Direct API call failed (needs auth token).</span>\n`;
+    log.innerHTML += `<span class="info">Use GitHub's web interface or CLI:</span>\n`;
+    showManualCommand(cfg);
+  }
+}
+
+function showManualCommand(cfg) {
+  const log = document.getElementById('log');
+  const status = document.getElementById('status');
+
+  log.innerHTML += `\n<span class="info">Option 1: Browser — open</span>\n`;
+  log.innerHTML += `<span class="info">https://github.com/${REPO}/actions/workflows/build.yml</span>\n`;
+  log.innerHTML += `<span class="info">→ Click "Run workflow" → paste config JSON</span>\n`;
+  log.innerHTML += `\n<span class="info">Option 2: Terminal (if gh CLI is logged in):</span>\n`;
+  log.innerHTML += `<span class="info">gh workflow run build.yml -f board=${cfg.board} -f chip=${cfg.chip} -f language=${cfg.language} -f config_json='${JSON.stringify(cfg)}'</span>\n`;
+
+  status.className = 'status status-error';
+  status.textContent = 'Manual trigger needed';
+}
+
+// ─── Poll run status ───────────────────────────────────────────
+async function pollLatestRun() {
+  const log = document.getElementById('log');
+  const status = document.getElementById('status');
+  const result = document.getElementById('result');
+
+  try {
+    log.innerHTML += `<span class="info">Checking run status...</span>\n`;
+    const resp = await fetch(`https://api.github.com/repos/${REPO}/actions/runs?per_page=1`, {
+      headers: { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
+    });
+    const data = await resp.json();
+
+    if (data.workflow_runs?.length > 0) {
+      const run = data.workflow_runs[0];
+      log.innerHTML += `<span class="info">Run: ${run.status} / ${run.conclusion || 'in-progress'}</span>\n`;
+      log.innerHTML += `<span class="info">URL: ${run.html_url}</span>\n`;
+
+      if (run.conclusion === 'success') {
+        status.className = 'status status-done';
+        status.textContent = 'Build complete!';
+        // Get artifacts
+        const artResp = await fetch(run.artifacts_url, {
+          headers: { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
+        });
+        const artData = await artResp.json();
+        if (artData.artifacts?.length > 0) {
+          result.innerHTML = `<strong>📦 Download firmware:</strong><br><a href="${run.html_url}" target="_blank">${run.html_url}</a><br><small>Scroll to "Artifacts" section</small>`;
+        }
+      } else if (run.conclusion === 'failure') {
+        status.className = 'status status-error';
+        status.textContent = 'Build failed';
+        log.innerHTML += `<span class="error">❌ Build failed. Check logs: ${run.html_url}</span>\n`;
+      } else if (run.status === 'in_progress' || run.status === 'queued') {
+        status.textContent = 'Building...';
+        setTimeout(() => pollLatestRun(), 20000);
+      }
+    }
+  } catch (e) {
+    log.innerHTML += `<span class="error">Cannot poll status (needs auth). Check manually: https://github.com/${REPO}/actions</span>\n`;
+  }
+}
+
+// ─── Flash via WebSerial (esptool-js) ──────────────────────────
+let firmwareBin = null;
+
+async function flashFirmware() {
+  const log = document.getElementById('log');
+  const status = document.getElementById('status');
+  log.classList.remove('hidden');
+
+  if (!('serial' in navigator)) {
+    log.innerHTML += `<span class="error">❌ WebSerial not supported. Use Chrome/Edge.</span>\n`;
+    return;
+  }
+
+  if (!firmwareBin) {
+    // Ask user to provide firmware URL or file
+    const url = prompt('Paste firmware .bin URL (from GitHub Artifacts), or leave blank to upload file:');
+    if (url) {
+      try {
+        log.innerHTML += `<span class="info">Downloading firmware...</span>\n`;
+        const resp = await fetch(url);
+        firmwareBin = new Uint8Array(await resp.arrayBuffer());
+        log.innerHTML += `<span class="info">✅ Downloaded ${(firmwareBin.length/1024).toFixed(0)} KB</span>\n`;
+      } catch (e) {
+        log.innerHTML += `<span class="error">❌ Download failed: ${e.message}</span>\n`;
+        return;
+      }
+    } else {
+      // File upload fallback
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.bin';
+      const file = await new Promise(resolve => {
+        input.onchange = () => resolve(input.files[0]);
+        input.click();
+      });
+      if (!file) {
+        log.innerHTML += `<span class="error">No file selected.</span>\n`;
+        return;
+      }
+      firmwareBin = new Uint8Array(await file.arrayBuffer());
+      log.innerHTML += `<span class="info">✅ Loaded ${(firmwareBin.length/1024).toFixed(0)} KB</span>\n`;
+    }
+  }
+
+  // Use esptool-js from CDN
+  log.innerHTML += `<span class="info">Loading esptool-js...</span>\n`;
+  const script = document.createElement('script');
+  script.src = 'https://unpkg.com/esptool-js@0.5.4/bundle.js';
+  await new Promise((resolve, reject) => { script.onload = resolve; script.onerror = reject; });
+  document.head.appendChild(script);
+
+  try {
+    const port = await navigator.serial.requestPort();
+    log.innerHTML += `<span class="info">Flashing... (this takes ~30-60 seconds)</span>\n`;
+
+    const espLoaderTerminal = {
+      clean: () => {},
+      writeLine: (s) => log.innerHTML += `<span class="info">${s}</span>\n`,
+      write: (s) => log.innerHTML += s,
+    };
+
+    const transport = new esptooljs.Transport(port);
+    const loader = new esptooljs.ESPLoader({
+      transport,
+      baudrate: 921600,
+      terminal: espLoaderTerminal,
+    });
+
+    await loader.main();
+    // Flash at address 0x0, 16MB flash
+    await loader.writeFlash({
+      fileArray: [{ data: firmwareBin, address: 0x0 }],
+      flashSize: '16MB',
+      flashMode: 'dio',
+      flashFreq: '40m',
+      eraseAll: true,
+    });
+
+    log.innerHTML += `<span class="info">✅ Flash complete! Resetting ESP32...</span>\n`;
+    status.className = 'status status-done';
+    status.textContent = 'Flashed!';
+    await loader.hardReset();
+    await port.close();
+  } catch (e) {
+    log.innerHTML += `<span class="error">❌ Flash failed: ${e.message}</span>\n`;
+    status.className = 'status status-error';
+    status.textContent = 'Flash failed';
+  }
+}
+</script>
+<script type="module">
+// Load esptool-js ESM as a global for the flash function
+import * as esptooljs from 'https://esm.sh/esptool-js@0.5.4';
+window.esptooljs = esptooljs;
+</script>
+</body>
+</html>
