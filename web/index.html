@@ -7,51 +7,72 @@
 <style>
 :root { --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #e2e8f0; --muted: #94a3b8; --accent: #3b82f6; --accent-hover: #2563eb; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; }
 * { box-sizing:border-box; margin:0; padding:0 }
-body { font-family:system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh }
-.container { max-width:900px; margin:0 auto; padding:20px }
+body { font-family:system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; line-height:1.5 }
+.container { max-width:960px; margin:0 auto; padding:20px }
 h1 { font-size:1.5rem; margin-bottom:4px }
-h2 { font-size:1rem; color:var(--muted); font-weight:400; margin-bottom:20px }
+.subtitle { font-size:.9rem; color:var(--muted); margin-bottom:24px }
 .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px }
-.card-title { font-weight:600; margin-bottom:12px; display:flex; align-items:center; gap:8px }
+.card-title { font-weight:600; font-size:.95rem; margin-bottom:14px; display:flex; align-items:center; gap:8px }
 .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px }
+.grid-full { grid-column:1/-1 }
 .form-group { margin-bottom:12px }
-.form-group label { display:block; font-size:.85rem; color:var(--muted); margin-bottom:4px }
-select, input { width:100%; padding:8px 12px; background:#0f172a; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:.9rem; font-family:inherit }
-select:focus, input:focus { outline:none; border-color:var(--accent) }
-.pin-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px }
+.form-group label { display:block; font-size:.8rem; color:var(--muted); margin-bottom:4px }
+select, input { width:100%; padding:9px 12px; background:#0f172a; border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:.85rem; font-family:inherit }
+select:focus, input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(59,130,246,.2) }
+.pin-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:6px }
 .pin-item { background:#0f172a; border:1px solid var(--border); border-radius:8px; padding:8px }
-.pin-item .pin-label { font-size:.75rem; color:var(--muted); margin-bottom:4px }
-.pin-item input { padding:4px 8px; font-size:.8rem }
-.btn { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; border:none; border-radius:8px; font-size:.9rem; font-weight:600; cursor:pointer; transition:all .15s; font-family:inherit }
+.pin-item .pin-label { font-size:.7rem; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px }
+.pin-item input { padding:5px 8px; font-size:.8rem }
+.btn { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; border:none; border-radius:8px; font-size:.85rem; font-weight:600; cursor:pointer; transition:all .15s; font-family:inherit; text-decoration:none }
 .btn-primary { background:var(--accent); color:#fff }
-.btn-primary:hover { background:var(--accent-hover) }
+.btn-primary:hover { background:var(--accent-hover); transform:translateY(-1px) }
 .btn-success { background:var(--success); color:#000 }
-.btn-success:hover { filter:brightness(.9) }
-.btn:disabled { opacity:.5; cursor:not-allowed }
-.btn-row { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap }
-.log { background:#000; border-radius:8px; padding:12px; font-family:'Courier New',monospace; font-size:.8rem; max-height:300px; overflow-y:auto; white-space:pre-wrap; color:#a3e635 }
+.btn-success:hover { filter:brightness(.9); transform:translateY(-1px) }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--text) }
+.btn-outline:hover { border-color:var(--accent) }
+.btn:disabled { opacity:.45; cursor:not-allowed; transform:none }
+.btn-row { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap }
+.steps { counter-reset:step; list-style:none; margin-bottom:16px }
+.steps li { counter-increment:step; padding:8px 0 8px 36px; position:relative; font-size:.85rem; color:var(--muted) }
+.steps li::before { content:counter(step); position:absolute; left:0; top:8px; width:24px; height:24px; border-radius:50%; background:var(--border); color:var(--text); font-size:.75rem; font-weight:700; display:flex; align-items:center; justify-content:center }
+.steps li.active { color:var(--text) }
+.steps li.active::before { background:var(--accent) }
+.steps li.done { color:var(--success) }
+.steps li.done::before { background:var(--success); content:'✓' }
+.log { background:#000; border-radius:8px; padding:12px; font-family:'Courier New',monospace; font-size:.8rem; max-height:260px; overflow-y:auto; white-space:pre-wrap; color:#a3e635; margin-top:12px }
 .log .error { color:var(--danger) }
+.log .warn { color:var(--warning) }
 .log .info { color:var(--muted) }
-.status { padding:4px 10px; border-radius:999px; font-size:.75rem; font-weight:600; display:inline-block }
+.status { padding:5px 12px; border-radius:999px; font-size:.75rem; font-weight:600; display:inline-block }
 .status-idle { background:var(--border); color:var(--muted) }
-.status-building { background:var(--warning); color:#000 }
-.status-done { background:var(--success); color:#000 }
-.status-error { background:var(--danger); color:#fff }
+.status-building { background:rgba(245,158,11,.2); color:var(--warning) }
+.status-done { background:rgba(34,197,94,.2); color:var(--success) }
+.status-error { background:rgba(239,68,68,.2); color:var(--danger) }
 .hidden { display:none !important }
-.spinner { display:inline-block; width:14px; height:14px; border:2px solid transparent; border-top-color:currentColor; border-radius:50%; animation:spin .6s linear infinite }
-@keyframes spin { to { transform:rotate(360deg) } }
-.result-box { margin-top:10px; padding:12px; border-radius:8px; background:#0f172a; border:1px solid var(--border) }
-.result-box a { color:var(--accent); word-break:break-all }
+code { background:var(--border); padding:2px 6px; border-radius:4px; font-size:.8rem }
+.artifacts-link { color:var(--accent); word-break:break-all; font-size:.85rem }
+.note { font-size:.8rem; color:var(--muted); margin-top:8px; padding:10px; background:rgba(59,130,246,.1); border-radius:8px; border-left:3px solid var(--accent) }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>🔧 XiaoZhi ESP32 Builder</h1>
-  <h2>Build firmware · Map pins · Flash directly from browser</h2>
+  <p class="subtitle">Cấu hình → Build firmware trên cloud → Nạp thẳng vào ESP32 qua USB</p>
+
+  <!-- Steps guide -->
+  <div class="card">
+    <div class="card-title">📋 Các bước</div>
+    <ol class="steps">
+      <li class="active" id="step1">Chọn board &amp; cấu hình GPIO</li>
+      <li id="step2">Build firmware trên GitHub Actions (cloud)</li>
+      <li id="step3">Tải file .bin từ Artifacts</li>
+      <li id="step4">Nạp firmware vào ESP32 qua USB</li>
+    </ol>
+  </div>
 
   <!-- Board Selection -->
   <div class="card">
-    <div class="card-title">📋 Board Setup</div>
+    <div class="card-title">1️⃣ Board &amp; Chip</div>
     <div class="grid">
       <div class="form-group">
         <label>Board Type</label>
@@ -61,16 +82,22 @@ select:focus, input:focus { outline:none; border-color:var(--accent) }
           <option value="bread-compact-wifi-s3cam">Bread Compact WiFi + Cam</option>
           <option value="bread-compact-esp32">Bread Compact ESP32 DevKit</option>
           <option value="bread-compact-esp32-lcd">Bread Compact ESP32 + LCD</option>
+          <option value="bread-compact-ml307">Bread Compact ML307 4G</option>
           <option value="atoms3-echo-base">AtomS3 + Echo Base</option>
           <option value="esp-box-3">ESP-BOX-3</option>
           <option value="m5stack-core-s3">M5Stack CoreS3</option>
-          <option value="lichuang-dev">Lichuang Dev Board</option>
+          <option value="lichuang-dev">Lichuang Dev Board (S3)</option>
+          <option value="xmini-c3">Xmini C3</option>
+          <option value="magiclick-2p4">Magic Button 2.4</option>
+          <option value="lilygo-t-circle-s3">LILYGO T-Circle-S3</option>
+          <option value="waveshare">Waveshare AMOLED 1.8</option>
+          <option value="kevin-box-2">Kevin Box 2</option>
         </select>
       </div>
       <div class="form-group">
         <label>Chip Target</label>
         <select id="chip">
-          <option value="esp32s3">ESP32-S3</option>
+          <option value="esp32s3" selected>ESP32-S3</option>
           <option value="esp32">ESP32</option>
           <option value="esp32c3">ESP32-C3</option>
           <option value="esp32c5">ESP32-C5</option>
@@ -79,11 +106,12 @@ select:focus, input:focus { outline:none; border-color:var(--accent) }
         </select>
       </div>
       <div class="form-group">
-        <label>Language</label>
+        <label>Ngôn ngữ</label>
         <select id="language">
           <option value="vi_VN" selected>Tiếng Việt</option>
           <option value="en_US">English</option>
-          <option value="zh_CN">中文</option>
+          <option value="zh_CN">中文（简体）</option>
+          <option value="zh_TW">中文（繁體）</option>
           <option value="ja_JP">日本語</option>
           <option value="ko_KR">한국어</option>
           <option value="th_TH">ไทย</option>
@@ -94,145 +122,109 @@ select:focus, input:focus { outline:none; border-color:var(--accent) }
 
   <!-- Pin Mapper -->
   <div class="card">
-    <div class="card-title">📌 GPIO Mapping</div>
-    <div class="pin-grid" id="pinGrid">
-      <!-- Populated by JS -->
-    </div>
+    <div class="card-title">📌 GPIO Mapping <span style="font-weight:400;color:var(--muted);font-size:.8rem">— chỉnh nếu dùng mạch tự thiết kế</span></div>
+    <div class="pin-grid" id="pinGrid"></div>
     <div class="form-group" style="margin-top:12px">
-      <label>Audio Mode</label>
+      <label>Chế độ Audio I2S</label>
       <select id="audioMode">
-        <option value="simplex">Simplex I2S (mic + speaker separate)</option>
-        <option value="duplex">Duplex I2S (shared bus)</option>
+        <option value="simplex">Simplex (mic + speaker riêng)</option>
+        <option value="duplex">Duplex (chung bus)</option>
       </select>
     </div>
   </div>
 
-  <!-- WiFi & Server -->
-  <div class="card">
-    <div class="card-title">🌐 Network & Server</div>
-    <div class="grid">
-      <div class="form-group">
-        <label>WiFi SSID (for provisioning)</label>
-        <input id="wifiSsid" placeholder="Optional: pre-configure WiFi">
-      </div>
-      <div class="form-group">
-        <label>WiFi Password</label>
-        <input id="wifiPass" type="password" placeholder="Optional">
-      </div>
-      <div class="form-group" style="grid-column:1/-1">
-        <label>WebSocket Server URL</label>
-        <input id="serverUrl" value="wss://api.tenclass.net/xiaozhi/v1/" placeholder="wss://your-server.com/ws">
-      </div>
-    </div>
-  </div>
-
-  <!-- Action Buttons -->
+  <!-- Actions -->
   <div class="card">
     <div class="card-title" style="justify-content:space-between">
-      <span>⚡ Actions</span>
-      <span class="status status-idle" id="status">Ready</span>
+      <span>⚡ Thực thi</span>
+      <span class="status status-idle" id="status">Sẵn sàng</span>
     </div>
+
     <div class="btn-row">
-      <button class="btn btn-primary" id="btnBuild" onclick="triggerBuild()">
-        🔨 Build Firmware (GitHub Actions)
+      <button class="btn btn-primary" id="btnBuild" onclick="openBuildPage()">
+        🔨 Bước 1: Mở trang Build (GitHub Actions)
       </button>
-      <button class="btn btn-success" id="btnFlash" onclick="flashFirmware()">
-        ⚡ Flash via USB
+      <input type="file" id="firmwareFile" accept=".bin" class="hidden" onchange="onFirmwareSelected(this)">
+      <button class="btn btn-outline" onclick="document.getElementById('firmwareFile').click()">
+        📂 Bước 2: Chọn file .bin đã tải
+      </button>
+      <button class="btn btn-success" id="btnFlash" onclick="flashFirmware()" disabled>
+        ⚡ Bước 3: Nạp vào ESP32
       </button>
     </div>
+
+    <div class="note" style="margin-top:14px">
+      <strong>💡 Cách dùng:</strong><br>
+      1. Bấm <strong>"Mở trang Build"</strong> → GitHub mở ra → bấm <strong>"Run workflow"</strong> màu xanh → đợi ~6 phút<br>
+      2. Vào tab <strong>Artifacts</strong> ở cuối trang build → tải file .zip → giải nén lấy file <strong>.bin</strong><br>
+      3. Bấm <strong>"Chọn file .bin"</strong> → chọn file vừa tải<br>
+      4. Cắm ESP32 vào máy → bấm <strong>"Nạp vào ESP32"</strong> (cần Chrome/Edge)
+    </div>
+
     <div class="log hidden" id="log"></div>
-    <div class="result-box hidden" id="result"></div>
   </div>
 </div>
 
 <script>
-// ─── Pin definitions per board ─────────────────────────────────
+// ─── Pin definitions ───────────────────────────────────────────
 const boardPins = {
   'bread-compact-wifi': [
-    {key:'mic_ws', label:'MIC WS', gpio:4, group:'audio'},
-    {key:'mic_sck', label:'MIC SCK', gpio:5, group:'audio'},
-    {key:'mic_din', label:'MIC DIN', gpio:6, group:'audio'},
-    {key:'spk_dout', label:'SPK DOUT', gpio:7, group:'audio'},
-    {key:'spk_bclk', label:'SPK BCLK', gpio:15, group:'audio'},
-    {key:'spk_lrck', label:'SPK LRCK', gpio:16, group:'audio'},
-    {key:'led', label:'LED', gpio:48, group:'io'},
-    {key:'boot_btn', label:'BOOT BTN', gpio:0, group:'io'},
-    {key:'display_sda', label:'I2C SDA', gpio:41, group:'display'},
-    {key:'display_scl', label:'I2C SCL', gpio:42, group:'display'},
-    {key:'lamp', label:'LAMP', gpio:18, group:'extra'},
+    {key:'mic_ws',label:'MIC WS',gpio:4},{key:'mic_sck',label:'MIC SCK',gpio:5},
+    {key:'mic_din',label:'MIC DIN',gpio:6},{key:'spk_dout',label:'SPK DOUT',gpio:7},
+    {key:'spk_bclk',label:'SPK BCLK',gpio:15},{key:'spk_lrck',label:'SPK LRCK',gpio:16},
+    {key:'led',label:'LED',gpio:48},{key:'boot_btn',label:'BOOT BTN',gpio:0},
+    {key:'display_sda',label:'I2C SDA',gpio:41},{key:'display_scl',label:'I2C SCL',gpio:42},
+    {key:'lamp',label:'LAMP',gpio:18},
   ],
   'bread-compact-wifi-lcd': [
-    {key:'mic_ws', label:'MIC WS', gpio:4, group:'audio'},
-    {key:'mic_sck', label:'MIC SCK', gpio:5, group:'audio'},
-    {key:'mic_din', label:'MIC DIN', gpio:6, group:'audio'},
-    {key:'spk_dout', label:'SPK DOUT', gpio:7, group:'audio'},
-    {key:'spk_bclk', label:'SPK BCLK', gpio:15, group:'audio'},
-    {key:'spk_lrck', label:'SPK LRCK', gpio:16, group:'audio'},
-    {key:'led', label:'LED', gpio:48, group:'io'},
-    {key:'boot_btn', label:'BOOT BTN', gpio:0, group:'io'},
-    {key:'display_sda', label:'LCD SDA', gpio:41, group:'display'},
-    {key:'display_scl', label:'LCD SCL', gpio:42, group:'display'},
-    {key:'lamp', label:'LAMP', gpio:18, group:'extra'},
-  ],
-  'bread-compact-wifi-s3cam': [
-    {key:'mic_ws', label:'MIC WS', gpio:4, group:'audio'},
-    {key:'mic_sck', label:'MIC SCK', gpio:5, group:'audio'},
-    {key:'mic_din', label:'MIC DIN', gpio:6, group:'audio'},
-    {key:'spk_dout', label:'SPK DOUT', gpio:7, group:'audio'},
-    {key:'spk_bclk', label:'SPK BCLK', gpio:15, group:'audio'},
-    {key:'spk_lrck', label:'SPK LRCK', gpio:16, group:'audio'},
-    {key:'led', label:'LED', gpio:48, group:'io'},
-    {key:'boot_btn', label:'BOOT BTN', gpio:0, group:'io'},
-    {key:'display_sda', label:'LCD SDA', gpio:41, group:'display'},
-    {key:'display_scl', label:'LCD SCL', gpio:42, group:'display'},
-    {key:'lamp', label:'LAMP', gpio:18, group:'extra'},
-    {key:'cam_xclk', label:'CAM XCLK', gpio:15, group:'camera'},
-    {key:'cam_pclk', label:'CAM PCLK', gpio:13, group:'camera'},
-    {key:'cam_vsync', label:'CAM VSYNC', gpio:12, group:'camera'},
-    {key:'cam_href', label:'CAM HREF', gpio:11, group:'camera'},
-    {key:'cam_d0', label:'CAM D0', gpio:14, group:'camera'},
-    {key:'cam_d1', label:'CAM D1', gpio:10, group:'camera'},
-    {key:'cam_d2', label:'CAM D2', gpio:9, group:'camera'},
-    {key:'cam_d3', label:'CAM D3', gpio:8, group:'camera'},
-    {key:'cam_sda', label:'CAM SDA', gpio:4, group:'camera'},
-    {key:'cam_scl', label:'CAM SCL', gpio:5, group:'camera'},
+    {key:'mic_ws',label:'MIC WS',gpio:4},{key:'mic_sck',label:'MIC SCK',gpio:5},
+    {key:'mic_din',label:'MIC DIN',gpio:6},{key:'spk_dout',label:'SPK DOUT',gpio:7},
+    {key:'spk_bclk',label:'SPK BCLK',gpio:15},{key:'spk_lrck',label:'SPK LRCK',gpio:16},
+    {key:'led',label:'LED',gpio:48},{key:'boot_btn',label:'BOOT BTN',gpio:0},
+    {key:'lcd_sda',label:'LCD SDA',gpio:41},{key:'lcd_scl',label:'LCD SCL',gpio:42},
   ],
   'esp-box-3': [
-    {key:'boot_btn', label:'BOOT BTN', gpio:0, group:'io'},
-    {key:'led', label:'LED', gpio:47, group:'io'},
+    {key:'boot_btn',label:'BOOT BTN',gpio:0},{key:'led',label:'LED',gpio:47},
   ],
   'm5stack-core-s3': [
-    {key:'led', label:'LED', gpio:21, group:'io'},
-    {key:'boot_btn', label:'BOOT BTN', gpio:0, group:'io'},
+    {key:'led',label:'LED',gpio:21},{key:'boot_btn',label:'BOOT BTN',gpio:0},
   ],
+  'lichuang-dev': [
+    {key:'mic_ws',label:'MIC WS',gpio:45},{key:'mic_sck',label:'MIC SCK',gpio:42},
+    {key:'mic_din',label:'MIC DIN',gpio:41},{key:'spk_dout',label:'SPK DOUT',gpio:2},
+    {key:'spk_bclk',label:'SPK BCLK',gpio:1},{key:'spk_lrck',label:'SPK LRCK',gpio:0},
+    {key:'led',label:'LED',gpio:38},{key:'boot_btn',label:'BOOT BTN',gpio:0},
+    {key:'display_sda',label:'I2C SDA',gpio:10},{key:'display_scl',label:'I2C SCL',gpio:11},
+  ],
+};
+
+const boardToChip = {
+  'bread-compact-wifi':'esp32s3','bread-compact-wifi-lcd':'esp32s3','bread-compact-wifi-s3cam':'esp32s3',
+  'bread-compact-esp32':'esp32','bread-compact-esp32-lcd':'esp32',
+  'bread-compact-ml307':'esp32s3','atoms3-echo-base':'esp32s3','esp-box-3':'esp32s3',
+  'm5stack-core-s3':'esp32s3','lichuang-dev':'esp32s3','xmini-c3':'esp32c3',
+  'magiclick-2p4':'esp32s3','lilygo-t-circle-s3':'esp32s3','waveshare':'esp32s3','kevin-box-2':'esp32s3',
 };
 
 // ─── Render pin grid ───────────────────────────────────────────
 const pinGrid = document.getElementById('pinGrid');
 const boardSelect = document.getElementById('board');
+const chipSelect = document.getElementById('chip');
 
 function renderPins(board) {
   const pins = boardPins[board] || boardPins['bread-compact-wifi'];
   pinGrid.innerHTML = pins.map(p => `
-    <div class="pin-item" data-group="${p.group}">
+    <div class="pin-item">
       <div class="pin-label">${p.label}</div>
       <input type="number" id="pin_${p.key}" value="${p.gpio}" min="0" max="48" data-key="${p.key}">
     </div>
   `).join('');
+  // Auto-set chip
+  const chip = boardToChip[board];
+  if (chip) chipSelect.value = chip;
 }
 
-boardSelect.addEventListener('change', () => {
-  const board = boardSelect.value;
-  renderPins(board);
-  // Auto-set chip based on board
-  if (board.startsWith('bread-compact-esp32') && !board.includes('wifi-lcd') && !board.includes('wifi-s3cam')) {
-    if (board.includes('bread-compact-esp32') || board === 'bread-compact-esp32-lcd') {
-      document.getElementById('chip').value = 'esp32';
-    }
-  }
-});
-
-// Initial render
+boardSelect.addEventListener('change', () => renderPins(boardSelect.value));
 renderPins(boardSelect.value);
 
 // ─── Collect config ────────────────────────────────────────────
@@ -243,203 +235,130 @@ function collectConfig() {
   });
   return {
     board: boardSelect.value,
-    chip: document.getElementById('chip').value,
+    chip: chipSelect.value,
     pins,
     language: document.getElementById('language').value,
     audio: { method: document.getElementById('audioMode').value },
   };
 }
 
-// ─── Build via GitHub Actions API ──────────────────────────────
+// ─── Open build page with pre-filled config ────────────────────
 const REPO = 'Zipra214/xiaozhi-builder';
-// In production: use a Cloudflare Worker or similar proxy to avoid exposing the token.
-// For now, trigger manually — user copies the curl command.
-async function triggerBuild() {
+const BUILD_URL = `https://github.com/${REPO}/actions/workflows/build.yml`;
+
+function openBuildPage() {
   const cfg = collectConfig();
+  const configJson = JSON.stringify(cfg);
+
+  // Open GitHub Actions page in new tab
+  window.open(BUILD_URL, '_blank');
+
+  // Show the config to copy-paste
   const log = document.getElementById('log');
-  const status = document.getElementById('status');
-  const result = document.getElementById('result');
-
-  // Build the dispatch payload
-  const workflowFile = 'build.yml';
-  const payload = {
-    ref: 'main',
-    inputs: {
-      board: cfg.board,
-      chip: cfg.chip,
-      language: cfg.language,
-      config_json: JSON.stringify(cfg),
-    },
-  };
-
-  // Show instructions
   log.classList.remove('hidden');
-  result.classList.remove('hidden');
-  status.className = 'status status-building';
-  status.textContent = 'Ready to dispatch';
+  log.innerHTML = `<span class="info">📋 Đã mở trang GitHub Actions.</span>\n`;
+  log.innerHTML += `<span class="info">Bấm nút "Run workflow" → điền form:</span>\n`;
+  log.innerHTML += `<span class="info">  Board: ${cfg.board}</span>\n`;
+  log.innerHTML += `<span class="info">  Chip: ${cfg.chip}</span>\n`;
+  log.innerHTML += `<span class="info">  Language: ${cfg.language}</span>\n`;
+  log.innerHTML += `<span class="info">  Config JSON (copy paste vào ô config_json):</span>\n`;
+  log.innerHTML += `<span class="info">${configJson}</span>\n`;
+  log.innerHTML += `\n<span class="info">⏳ Sau khi build xong (~6 phút), tải file .bin từ Artifacts,</span>\n`;
+  log.innerHTML += `<span class="info">   rồi quay lại đây chọn file và bấm Nạp.</span>\n`;
 
-  // Try via gh CLI if available, else show manual curl
-  log.innerHTML = `<span class="info">Dispatching workflow...</span>\n`;
+  document.getElementById('status').className = 'status status-building';
+  document.getElementById('status').textContent = 'Chờ build...';
 
-  try {
-    const resp = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${workflowFile}/dispatches`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (resp.ok || resp.status === 204) {
-      log.innerHTML += `<span class="info">✅ Build dispatched! Check run at:</span>\n`;
-      log.innerHTML += `<span class="info">https://github.com/${REPO}/actions</span>\n`;
-      log.innerHTML += `<span class="info">Artifacts will appear in ~6-8 minutes (ESP-IDF build takes time)</span>\n`;
-      status.className = 'status status-building';
-      status.textContent = 'Building...';
-
-      // Start polling for the run
-      setTimeout(() => pollLatestRun(), 15000);
-    } else {
-      const err = await resp.text();
-      log.innerHTML += `<span class="error">❌ API error (${resp.status}): ${err}</span>\n`;
-      log.innerHTML += `<span class="info">\nManual fallback — run this command on your machine:</span>\n`;
-      showManualCommand(cfg);
-    }
-  } catch (e) {
-    log.innerHTML += `<span class="error">❌ Direct API call failed (needs auth token).</span>\n`;
-    log.innerHTML += `<span class="info">Use GitHub's web interface or CLI:</span>\n`;
-    showManualCommand(cfg);
-  }
+  // Update steps
+  document.getElementById('step1').className = 'done';
+  document.getElementById('step2').className = 'active';
 }
 
-function showManualCommand(cfg) {
+// ─── Firmware file handling ────────────────────────────────────
+let firmwareBin = null;
+let firmwareFileName = '';
+
+function onFirmwareSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+
   const log = document.getElementById('log');
-  const status = document.getElementById('status');
+  log.classList.remove('hidden');
+  log.innerHTML = `<span class="info">Đang đọc ${file.name}...</span>\n`;
 
-  log.innerHTML += `\n<span class="info">Option 1: Browser — open</span>\n`;
-  log.innerHTML += `<span class="info">https://github.com/${REPO}/actions/workflows/build.yml</span>\n`;
-  log.innerHTML += `<span class="info">→ Click "Run workflow" → paste config JSON</span>\n`;
-  log.innerHTML += `\n<span class="info">Option 2: Terminal (if gh CLI is logged in):</span>\n`;
-  log.innerHTML += `<span class="info">gh workflow run build.yml -f board=${cfg.board} -f chip=${cfg.chip} -f language=${cfg.language} -f config_json='${JSON.stringify(cfg)}'</span>\n`;
-
-  status.className = 'status status-error';
-  status.textContent = 'Manual trigger needed';
-}
-
-// ─── Poll run status ───────────────────────────────────────────
-async function pollLatestRun() {
-  const log = document.getElementById('log');
-  const status = document.getElementById('status');
-  const result = document.getElementById('result');
-
-  try {
-    log.innerHTML += `<span class="info">Checking run status...</span>\n`;
-    const resp = await fetch(`https://api.github.com/repos/${REPO}/actions/runs?per_page=1`, {
-      headers: { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
-    });
-    const data = await resp.json();
-
-    if (data.workflow_runs?.length > 0) {
-      const run = data.workflow_runs[0];
-      log.innerHTML += `<span class="info">Run: ${run.status} / ${run.conclusion || 'in-progress'}</span>\n`;
-      log.innerHTML += `<span class="info">URL: ${run.html_url}</span>\n`;
-
-      if (run.conclusion === 'success') {
-        status.className = 'status status-done';
-        status.textContent = 'Build complete!';
-        // Get artifacts
-        const artResp = await fetch(run.artifacts_url, {
-          headers: { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
-        });
-        const artData = await artResp.json();
-        if (artData.artifacts?.length > 0) {
-          result.innerHTML = `<strong>📦 Download firmware:</strong><br><a href="${run.html_url}" target="_blank">${run.html_url}</a><br><small>Scroll to "Artifacts" section</small>`;
-        }
-      } else if (run.conclusion === 'failure') {
-        status.className = 'status status-error';
-        status.textContent = 'Build failed';
-        log.innerHTML += `<span class="error">❌ Build failed. Check logs: ${run.html_url}</span>\n`;
-      } else if (run.status === 'in_progress' || run.status === 'queued') {
-        status.textContent = 'Building...';
-        setTimeout(() => pollLatestRun(), 20000);
-      }
-    }
-  } catch (e) {
-    log.innerHTML += `<span class="error">Cannot poll status (needs auth). Check manually: https://github.com/${REPO}/actions</span>\n`;
-  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    firmwareBin = new Uint8Array(reader.result);
+    firmwareFileName = file.name;
+    log.innerHTML += `<span class="info">✅ Đã tải ${file.name} (${(firmwareBin.length/1024).toFixed(0)} KB)</span>\n`;
+    log.innerHTML += `<span class="info">Sẵn sàng nạp. Cắm ESP32 vào USB rồi bấm "Nạp vào ESP32"</span>\n`;
+    document.getElementById('btnFlash').disabled = false;
+    document.getElementById('status').className = 'status status-building';
+    document.getElementById('status').textContent = 'Sẵn sàng nạp';
+    document.getElementById('step2').className = 'done';
+    document.getElementById('step3').className = 'active';
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 // ─── Flash via WebSerial (esptool-js) ──────────────────────────
-let firmwareBin = null;
-
 async function flashFirmware() {
   const log = document.getElementById('log');
   const status = document.getElementById('status');
+  const btnFlash = document.getElementById('btnFlash');
   log.classList.remove('hidden');
 
   if (!('serial' in navigator)) {
-    log.innerHTML += `<span class="error">❌ WebSerial not supported. Use Chrome/Edge.</span>\n`;
+    log.innerHTML += `<span class="error">❌ WebSerial không được hỗ trợ. Dùng Chrome hoặc Edge.</span>\n`;
+    status.className = 'status status-error';
     return;
   }
 
   if (!firmwareBin) {
-    // Ask user to provide firmware URL or file
-    const url = prompt('Paste firmware .bin URL (from GitHub Artifacts), or leave blank to upload file:');
-    if (url) {
-      try {
-        log.innerHTML += `<span class="info">Downloading firmware...</span>\n`;
-        const resp = await fetch(url);
-        firmwareBin = new Uint8Array(await resp.arrayBuffer());
-        log.innerHTML += `<span class="info">✅ Downloaded ${(firmwareBin.length/1024).toFixed(0)} KB</span>\n`;
-      } catch (e) {
-        log.innerHTML += `<span class="error">❌ Download failed: ${e.message}</span>\n`;
-        return;
-      }
-    } else {
-      // File upload fallback
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.bin';
-      const file = await new Promise(resolve => {
-        input.onchange = () => resolve(input.files[0]);
-        input.click();
-      });
-      if (!file) {
-        log.innerHTML += `<span class="error">No file selected.</span>\n`;
-        return;
-      }
-      firmwareBin = new Uint8Array(await file.arrayBuffer());
-      log.innerHTML += `<span class="info">✅ Loaded ${(firmwareBin.length/1024).toFixed(0)} KB</span>\n`;
-    }
+    log.innerHTML += `<span class="error">❌ Chưa chọn file .bin. Tải file từ GitHub Actions trước.</span>\n`;
+    return;
   }
 
-  // Use esptool-js from CDN
-  log.innerHTML += `<span class="info">Loading esptool-js...</span>\n`;
-  const script = document.createElement('script');
-  script.src = 'https://unpkg.com/esptool-js@0.5.4/bundle.js';
-  await new Promise((resolve, reject) => { script.onload = resolve; script.onerror = reject; });
-  document.head.appendChild(script);
+  btnFlash.disabled = true;
+  status.className = 'status status-building';
+  status.textContent = 'Đang nạp...';
+  document.getElementById('step3').className = 'active';
+
+  // Load esptool-js
+  log.innerHTML += `<span class="info">Đang tải công cụ nạp...</span>\n`;
+  const esptoolModule = await import('https://esm.sh/esptool-js@0.5.4');
 
   try {
+    log.innerHTML += `<span class="info">Chọn cổng COM của ESP32...</span>\n`;
     const port = await navigator.serial.requestPort();
-    log.innerHTML += `<span class="info">Flashing... (this takes ~30-60 seconds)</span>\n`;
+    log.innerHTML += `<span class="info">Đã chọn cổng. Đang kết nối...</span>\n`;
 
-    const espLoaderTerminal = {
+    const terminal = {
       clean: () => {},
-      writeLine: (s) => log.innerHTML += `<span class="info">${s}</span>\n`,
-      write: (s) => log.innerHTML += s,
+      writeLine: (s) => {
+        log.innerHTML += s + '\n';
+        log.scrollTop = log.scrollHeight;
+      },
+      write: (s) => {
+        log.innerHTML += s;
+        log.scrollTop = log.scrollHeight;
+      },
     };
 
-    const transport = new esptooljs.Transport(port);
-    const loader = new esptooljs.ESPLoader({
+    const transport = new esptoolModule.Transport(port);
+    const loader = new esptoolModule.ESPLoader({
       transport,
       baudrate: 921600,
-      terminal: espLoaderTerminal,
+      terminal,
     });
 
     await loader.main();
-    // Flash at address 0x0, 16MB flash
+    log.innerHTML += `<span class="info">Đang xóa flash cũ...</span>\n`;
+
+    // Determine flash size from binary
+    const flashSize = firmwareBin.length > 4*1024*1024 ? '8MB' : '4MB';
+    log.innerHTML += `<span class="info">Đang nạp ${(firmwareBin.length/1024/1024).toFixed(1)}MB vào ESP32 (khoảng 30-60 giây)...</span>\n`;
+
     await loader.writeFlash({
       fileArray: [{ data: firmwareBin, address: 0x0 }],
       flashSize: '16MB',
@@ -448,22 +367,31 @@ async function flashFirmware() {
       eraseAll: true,
     });
 
-    log.innerHTML += `<span class="info">✅ Flash complete! Resetting ESP32...</span>\n`;
+    log.innerHTML += `<span class="info">✅ Nạp thành công! Đang reset ESP32...</span>\n`;
     status.className = 'status status-done';
-    status.textContent = 'Flashed!';
-    await loader.hardReset();
-    await port.close();
+    status.textContent = '✅ Đã nạp xong';
+    document.getElementById('step3').className = 'done';
+    document.getElementById('step4').className = 'done';
+
+    try { await loader.hardReset(); } catch(e) {}
+    try { await port.close(); } catch(e) {}
+
+    log.innerHTML += `<span class="info">🎉 Xong! ESP32 đã sẵn sàng chạy XiaoZhi.</span>\n`;
   } catch (e) {
-    log.innerHTML += `<span class="error">❌ Flash failed: ${e.message}</span>\n`;
+    log.innerHTML += `<span class="error">❌ Lỗi: ${e.message}</span>\n`;
     status.className = 'status status-error';
-    status.textContent = 'Flash failed';
+    status.textContent = 'Nạp thất bại';
+
+    // Common fixes
+    if (e.message.includes('No serial')) {
+      log.innerHTML += `<span class="warn">💡 Kiểm tra: ESP32 đã cắm USB chưa? Đã cài driver CH340/CP2102 chưa?</span>\n`;
+    } else if (e.message.includes('Failed to connect')) {
+      log.innerHTML += `<span class="warn">💡 Thử: Giữ nút BOOT → bấm RST → thả BOOT → rồi bấm Nạp lại.</span>\n`;
+    }
+  } finally {
+    btnFlash.disabled = false;
   }
 }
-</script>
-<script type="module">
-// Load esptool-js ESM as a global for the flash function
-import * as esptooljs from 'https://esm.sh/esptool-js@0.5.4';
-window.esptooljs = esptooljs;
 </script>
 </body>
 </html>
