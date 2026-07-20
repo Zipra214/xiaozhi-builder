@@ -45,11 +45,14 @@ jobs:
 
       - name: Verify generated config
         run: |
-          echo "=== config.h ==="
+          echo "=== config.h (first 60 lines) ==="
           head -60 xiaozhi-esp32/main/boards/${{ inputs.board }}/config.h
           echo ""
-          echo "=== sdkconfig.defaults (last 20 lines) ==="
-          tail -20 xiaozhi-esp32/sdkconfig.defaults
+          echo "=== sdkconfig.defaults (last 30 lines) ==="
+          tail -30 xiaozhi-esp32/sdkconfig.defaults
+          echo ""
+          echo "=== sdkconfig.defaults line count ==="
+          wc -l xiaozhi-esp32/sdkconfig.defaults
 
       - name: Build firmware (ESP-IDF v6.0.2)
         uses: espressif/esp-idf-ci-action@v1
@@ -57,11 +60,17 @@ jobs:
           esp_idf_version: v6.0.2
           target: ${{ inputs.chip }}
           path: xiaozhi-esp32
-          command: |
-            idf.py set-target ${{ inputs.chip }}
-            idf.py build
+
+      - name: Show build logs if failed
+        if: failure()
+        run: |
+          echo "=== Build output (last 200 lines) ==="
+          tail -200 xiaozhi-esp32/build/log/idf_py_stdout_output_* 2>/dev/null || echo "No stdout log"
+          echo "=== Build errors ==="
+          tail -200 xiaozhi-esp32/build/log/idf_py_stderr_output_* 2>/dev/null || echo "No stderr log"
 
       - name: Collect build artifacts
+        if: success()
         run: |
           mkdir -p output
           cp xiaozhi-esp32/build/*.bin output/ 2>/dev/null || true
@@ -72,6 +81,7 @@ jobs:
           ls -la output/
 
       - name: Upload firmware
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: xiaozhi-firmware-${{ inputs.board }}-${{ inputs.chip }}
@@ -79,6 +89,7 @@ jobs:
           retention-days: 90
 
       - name: Build summary
+        if: success()
         run: |
           FW_SIZE=$(du -sh xiaozhi-esp32/build/*.bin 2>/dev/null | head -1 | cut -f1 || echo "unknown")
           echo "### ✅ Firmware Built :rocket:" >> $GITHUB_STEP_SUMMARY
@@ -86,5 +97,3 @@ jobs:
           echo "- **Chip:** ${{ inputs.chip }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Language:** ${{ inputs.language }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Binaries:** $FW_SIZE" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Download firmware from **Artifacts** section above :point_up:" >> $GITHUB_STEP_SUMMARY
