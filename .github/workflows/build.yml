@@ -40,8 +40,13 @@ jobs:
 
       - name: Generate board config
         run: |
-          echo '${{ inputs.config_json }}' > /tmp/config.json
-          node scripts/generate-config.js /tmp/config.json
+          if [ -f build_config.json ]; then
+            echo "Using build_config.json from repo"
+            node scripts/generate-config.js build_config.json
+          else
+            echo '${{ inputs.config_json }}' > /tmp/config.json
+            node scripts/generate-config.js /tmp/config.json
+          fi
 
       - name: Verify generated config
         run: |
